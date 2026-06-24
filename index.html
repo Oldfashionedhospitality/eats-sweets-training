@@ -1,0 +1,598 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Eats & Sweets — Staff Training Quiz</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;900&family=Inter:wght@400;500;600;700&display=swap');
+  :root {
+    --sage:#5a7a5e; --sage-light:#e8efe9; --sage-mid:#c2d4c4;
+    --cream:#faf7f2; --ink:#1e1e1e; --ink-soft:#4a4a4a;
+    --chalk:#ffffff; --hot:#c0392b; --hot-light:#fdecea;
+    --border:#d6e0d7; --press:#7b5e3a;
+    --correct:#2e7d52; --correct-light:#e8f5ee;
+    --wrong:#c0392b; --wrong-light:#fdecea;
+  }
+  *{box-sizing:border-box;margin:0;padding:0;}
+  body{font-family:'Inter',sans-serif;background:var(--cream);color:var(--ink);min-height:100vh;}
+
+  header{background:var(--sage);color:var(--chalk);padding:24px 32px 20px;display:flex;align-items:flex-end;justify-content:space-between;flex-wrap:wrap;gap:12px;}
+  header h1{font-family:'Playfair Display',serif;font-size:1.8rem;font-weight:900;line-height:1;}
+  header h1 span{color:var(--sage-mid);}
+  header p{font-size:0.75rem;opacity:0.8;margin-top:4px;text-transform:uppercase;letter-spacing:0.06em;}
+  .score-display{background:rgba(255,255,255,0.15);border-radius:12px;padding:10px 20px;text-align:center;min-width:100px;}
+  .score-display .score-num{font-family:'Playfair Display',serif;font-size:2rem;font-weight:900;line-height:1;}
+  .score-display .score-lbl{font-size:0.68rem;text-transform:uppercase;letter-spacing:0.07em;opacity:0.8;margin-top:2px;}
+
+  /* NAME SCREEN */
+  #name-screen{max-width:520px;margin:60px auto;padding:0 24px;text-align:center;}
+  #name-screen h2{font-family:'Playfair Display',serif;font-size:1.8rem;color:var(--sage);margin-bottom:10px;}
+  #name-screen p{color:var(--ink-soft);font-size:0.9rem;margin-bottom:32px;line-height:1.6;}
+  .name-input-wrap{display:flex;flex-direction:column;gap:12px;align-items:stretch;}
+  .name-input-wrap input{font-family:'Inter',sans-serif;font-size:1.1rem;padding:14px 20px;border:2px solid var(--border);border-radius:12px;background:var(--chalk);color:var(--ink);outline:none;text-align:center;transition:border-color 0.15s;}
+  .name-input-wrap input:focus{border-color:var(--sage);}
+  .name-input-wrap input.error{border-color:var(--wrong);}
+  .name-error{font-size:0.78rem;color:var(--wrong);display:none;}
+
+  /* CATEGORY PICKER */
+  #category-screen{max-width:780px;margin:40px auto;padding:0 24px;display:none;}
+  #category-screen h2{font-family:'Playfair Display',serif;font-size:1.5rem;color:var(--sage);margin-bottom:6px;}
+  #category-screen > p{color:var(--ink-soft);font-size:0.88rem;margin-bottom:24px;}
+  .cat-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(210px,1fr));gap:14px;margin-bottom:28px;}
+  .cat-card{background:var(--chalk);border:2px solid var(--border);border-radius:14px;padding:20px 18px;cursor:pointer;transition:all 0.15s;user-select:none;}
+  .cat-card:hover{border-color:var(--sage);transform:translateY(-2px);box-shadow:0 4px 16px rgba(90,122,94,0.12);}
+  .cat-card.selected{border-color:var(--sage);background:var(--sage-light);}
+  .cat-card .cat-icon{font-size:1.8rem;margin-bottom:8px;}
+  .cat-card .cat-name{font-weight:700;font-size:0.92rem;color:var(--ink);margin-bottom:3px;}
+  .cat-card .cat-desc{font-size:0.75rem;color:var(--ink-soft);line-height:1.4;}
+  .cat-card .cat-count{margin-top:8px;font-size:0.7rem;font-weight:600;color:var(--sage);}
+  .start-row{display:flex;gap:12px;align-items:center;flex-wrap:wrap;}
+
+  .btn-primary{font-family:'Inter',sans-serif;font-size:0.9rem;font-weight:700;padding:13px 32px;background:var(--sage);color:white;border:none;border-radius:30px;cursor:pointer;transition:background 0.15s,transform 0.1s;letter-spacing:0.03em;}
+  .btn-primary:hover{background:#486251;transform:translateY(-1px);}
+  .btn-primary:disabled{opacity:0.4;cursor:not-allowed;transform:none;}
+  .btn-secondary{font-family:'Inter',sans-serif;font-size:0.85rem;font-weight:600;padding:12px 24px;background:var(--chalk);color:var(--ink-soft);border:1.5px solid var(--border);border-radius:30px;cursor:pointer;transition:all 0.15s;}
+  .btn-secondary:hover{border-color:var(--sage);color:var(--sage);}
+
+  /* QUIZ SCREEN */
+  #quiz-screen{display:none;max-width:720px;margin:0 auto;padding:32px 24px;}
+  .progress-bar-wrap{background:var(--border);border-radius:10px;height:6px;margin-bottom:8px;overflow:hidden;}
+  .progress-bar{height:100%;background:var(--sage);border-radius:10px;transition:width 0.4s ease;}
+  .progress-label{font-size:0.75rem;color:var(--ink-soft);margin-bottom:24px;display:flex;justify-content:space-between;}
+  .q-category{font-size:0.7rem;font-weight:700;text-transform:uppercase;letter-spacing:0.08em;color:var(--sage);margin-bottom:8px;}
+  .q-text{font-family:'Playfair Display',serif;font-size:1.25rem;font-weight:700;color:var(--ink);line-height:1.4;margin-bottom:24px;}
+  .options-grid{display:grid;gap:10px;margin-bottom:24px;}
+  .option-btn{font-family:'Inter',sans-serif;font-size:0.88rem;font-weight:500;padding:14px 20px;background:var(--chalk);color:var(--ink);border:1.5px solid var(--border);border-radius:12px;cursor:pointer;text-align:left;transition:all 0.12s;line-height:1.4;}
+  .option-btn:hover:not(:disabled){border-color:var(--sage);background:var(--sage-light);}
+  .option-btn.correct{border-color:var(--correct);background:var(--correct-light);color:var(--correct);font-weight:600;}
+  .option-btn.wrong{border-color:var(--wrong);background:var(--wrong-light);color:var(--wrong);font-weight:600;}
+  .option-btn:disabled{cursor:default;}
+  .feedback-box{border-radius:12px;padding:16px 20px;margin-bottom:20px;display:none;line-height:1.5;}
+  .feedback-box.correct{background:var(--correct-light);border-left:4px solid var(--correct);color:var(--correct);}
+  .feedback-box.wrong{background:var(--wrong-light);border-left:4px solid var(--wrong);color:#7a1a1a;}
+  .feedback-box .feedback-head{font-weight:700;font-size:0.88rem;margin-bottom:4px;}
+  .feedback-box .feedback-body{font-size:0.83rem;}
+  .ai-explanation{background:var(--chalk);border:1.5px solid var(--border);border-radius:12px;padding:16px 20px;margin-bottom:20px;display:none;}
+  .ai-explanation .ai-head{font-size:0.7rem;font-weight:700;text-transform:uppercase;letter-spacing:0.08em;color:var(--sage);margin-bottom:8px;}
+  .ai-explanation .ai-body{font-size:0.85rem;color:var(--ink-soft);line-height:1.6;}
+  .dot-pulse{display:flex;gap:4px;align-items:center;}
+  .dot-pulse span{width:6px;height:6px;background:var(--sage);border-radius:50%;animation:pulse 1.2s ease-in-out infinite;}
+  .dot-pulse span:nth-child(2){animation-delay:0.2s;}
+  .dot-pulse span:nth-child(3){animation-delay:0.4s;}
+  @keyframes pulse{0%,80%,100%{opacity:0.2;transform:scale(0.8);}40%{opacity:1;transform:scale(1);}}
+  .nav-row{display:flex;gap:12px;justify-content:flex-end;}
+
+  /* RESULTS SCREEN */
+  #results-screen{display:none;max-width:680px;margin:40px auto;padding:0 24px 48px;}
+  .results-card{background:var(--chalk);border:1.5px solid var(--border);border-radius:20px;padding:36px;text-align:center;margin-bottom:24px;}
+  .results-emoji{font-size:3.5rem;margin-bottom:12px;}
+  .results-title{font-family:'Playfair Display',serif;font-size:2rem;font-weight:900;color:var(--ink);margin-bottom:6px;}
+  .results-sub{font-size:0.88rem;color:var(--ink-soft);margin-bottom:24px;}
+  .score-big{font-family:'Playfair Display',serif;font-size:4rem;font-weight:900;color:var(--sage);line-height:1;}
+  .score-big span{font-size:1.5rem;color:var(--ink-soft);}
+  .score-pct{font-size:1rem;color:var(--ink-soft);margin-top:4px;margin-bottom:24px;}
+  .results-breakdown{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:28px;text-align:left;}
+  .breakdown-item{background:var(--cream);border-radius:12px;padding:14px 16px;}
+  .breakdown-item .bd-label{font-size:0.72rem;text-transform:uppercase;letter-spacing:0.07em;color:var(--ink-soft);margin-bottom:3px;}
+  .breakdown-item .bd-val{font-weight:700;font-size:1.1rem;color:var(--ink);}
+  .breakdown-item.bd-correct .bd-val{color:var(--correct);}
+  .breakdown-item.bd-wrong .bd-val{color:var(--wrong);}
+
+  /* LOGGING STATUS */
+  .log-status{font-size:0.78rem;color:var(--ink-soft);text-align:center;margin-bottom:16px;min-height:22px;display:flex;align-items:center;justify-content:center;gap:6px;}
+  .log-status.success{color:var(--correct);}
+  .log-status.error{color:var(--wrong);}
+
+  .review-list{text-align:left;}
+  .review-list h3{font-family:'Playfair Display',serif;font-size:1.1rem;color:var(--ink);margin-bottom:14px;}
+  .review-item{border:1.5px solid var(--border);border-radius:10px;padding:12px 16px;margin-bottom:10px;background:var(--chalk);}
+  .review-item.ri-wrong{border-left:4px solid var(--wrong);}
+  .review-item .ri-q{font-size:0.85rem;font-weight:600;margin-bottom:5px;}
+  .review-item .ri-answer{font-size:0.78rem;color:var(--ink-soft);}
+  .review-item .ri-answer span{font-weight:600;}
+  .review-item .ri-answer .good{color:var(--correct);}
+  .review-item .ri-answer .bad{color:var(--wrong);}
+
+  /* PASSING BANNER */
+  .pass-banner{background:var(--correct);color:white;border-radius:14px;padding:20px 24px;margin-bottom:20px;text-align:center;}
+  .pass-banner .pb-title{font-family:'Playfair Display',serif;font-size:1.3rem;font-weight:900;margin-bottom:4px;}
+  .pass-banner .pb-sub{font-size:0.82rem;opacity:0.9;}
+
+  @media(max-width:560px){
+    header{padding:18px 16px;}
+    #quiz-screen,#category-screen,#results-screen,#name-screen{padding:20px 16px;}
+    .cat-grid{grid-template-columns:1fr 1fr;}
+    .results-breakdown{grid-template-columns:1fr 1fr;}
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div>
+    <h1>Eats <span>&</span> Sweets</h1>
+    <p>Staff Training Quiz</p>
+  </div>
+  <div class="score-display" id="headerScore" style="display:none;">
+    <div class="score-num" id="headerScoreNum">0</div>
+    <div class="score-lbl">Score</div>
+  </div>
+</header>
+
+<!-- NAME SCREEN -->
+<div id="name-screen">
+  <h2>Welcome!</h2>
+  <p>Enter your name to get started. Your results will be saved so the team can track training progress.</p>
+  <div class="name-input-wrap">
+    <input type="text" id="nameInput" placeholder="Your first & last name" autocomplete="off"
+      oninput="validateName()" onkeydown="if(event.key==='Enter')submitName()">
+    <span class="name-error" id="nameError">Please enter your full name before continuing.</span>
+    <button class="btn-primary" id="nameBtn" onclick="submitName()" disabled>Let's Go →</button>
+  </div>
+</div>
+
+<!-- CATEGORY SCREEN -->
+<div id="category-screen">
+  <h2 id="catGreeting">Choose Your Quiz</h2>
+  <p>Select one or more categories to practice. You need 90% or higher to pass.</p>
+  <div class="cat-grid" id="catGrid"></div>
+  <div class="start-row">
+    <button class="btn-primary" id="startBtn" onclick="startQuiz()" disabled>Start Quiz →</button>
+    <button class="btn-secondary" onclick="selectAll()">Select All</button>
+    <span id="selectedCount" style="font-size:0.8rem;color:var(--ink-soft);"></span>
+  </div>
+</div>
+
+<!-- QUIZ SCREEN -->
+<div id="quiz-screen">
+  <div class="progress-bar-wrap"><div class="progress-bar" id="progressBar"></div></div>
+  <div class="progress-label">
+    <span id="progressLabel">Question 1 of 10</span>
+    <span id="progressCategory"></span>
+  </div>
+  <div class="q-category" id="qCategory"></div>
+  <div class="q-text" id="qText"></div>
+  <div class="options-grid" id="optionsGrid"></div>
+  <div class="feedback-box" id="feedbackBox">
+    <div class="feedback-head" id="feedbackHead"></div>
+    <div class="feedback-body" id="feedbackBody"></div>
+  </div>
+  <div class="ai-explanation" id="aiExplanation">
+    <div class="ai-head">🤖 Coach's Note</div>
+    <div class="ai-body" id="aiBody">
+      <div class="dot-pulse"><span></span><span></span><span></span></div>
+    </div>
+  </div>
+  <div class="nav-row">
+    <button class="btn-secondary" onclick="goHome()">← Home</button>
+    <button class="btn-primary" id="nextBtn" onclick="nextQuestion()" style="display:none;">Next Question →</button>
+  </div>
+</div>
+
+<!-- RESULTS SCREEN -->
+<div id="results-screen">
+  <div id="passBanner" class="pass-banner" style="display:none;">
+    <div class="pb-title">🎉 You passed!</div>
+    <div class="pb-sub" id="passBannerSub"></div>
+  </div>
+  <div class="results-card">
+    <div class="results-emoji" id="resultsEmoji">🎉</div>
+    <div class="results-title" id="resultsTitle">Quiz Complete!</div>
+    <div class="results-sub" id="resultsSub"></div>
+    <div class="score-big" id="scoreBig"></div>
+    <div class="score-pct" id="scorePct"></div>
+    <div class="results-breakdown">
+      <div class="breakdown-item bd-correct"><div class="bd-label">✓ Correct</div><div class="bd-val" id="bdCorrect">—</div></div>
+      <div class="breakdown-item bd-wrong"><div class="bd-label">✗ Missed</div><div class="bd-val" id="bdWrong">—</div></div>
+    </div>
+    <div class="log-status" id="logStatus"></div>
+    <div style="display:flex;gap:12px;justify-content:center;flex-wrap:wrap;">
+      <button class="btn-primary" onclick="restartSame()">Retry Quiz</button>
+      <button class="btn-secondary" onclick="goHome()">New Quiz</button>
+    </div>
+  </div>
+  <div class="review-list" id="reviewList"></div>
+</div>
+
+<script>
+// ─── CONFIG ──────────────────────────────────────────────────────────────────
+const SLACK_CHANNEL_ID = 'C0864QKD9DL'; // #eats-and-sweets
+const PASS_THRESHOLD = 0.90;
+
+// ─── QUESTION BANK ───────────────────────────────────────────────────────────
+const QUESTION_BANK = {
+  sandwiches: {
+    icon:'🥪', name:'Sandwich Builds', desc:'Ingredients, bread, and build order for every sandwich',
+    questions:[
+      {q:"What bread is used for the Pastrami Reuben?",options:["Sourdough","Marble Rye","Hoagie Roll","Croissant"],answer:1,fact:"The Reuben MUST use Rye bread — no exceptions. The bread is half the flavor of a classic Reuben."},
+      {q:"Which spread goes on The Roast?",options:["Chipotle Mayo","Pesto Mayo","Garlic Aioli","Thousand Island"],answer:2,fact:"Garlic Aioli goes on The Roast. Don't confuse it with the Lafilly Cheese Steak, which uses Chipotle Mayo."},
+      {q:"The Lafilly Cheese Steak uses which cheese?",options:["Provolone","Swiss","Cheddar","American"],answer:3,fact:"American cheese on the Lafilly — it melts smoothly, which is exactly what you want for a cheesesteak."},
+      {q:"What special prep is required for The Roast?",options:["Bacon must be crispy","Onions must be fully caramelized","Chicken must be grilled","Peppers must be roasted"],answer:1,fact:"Onions must be FULLY caramelized on The Roast — not just cooked. Plus a balsamic drizzle goes on top after building."},
+      {q:"What bread does The French Hen use?",options:["Sourdough","21-Grain","Hoagie Roll","Croissant"],answer:3,fact:"The French Hen is built on a Croissant — one of only two sandwiches that uses one."},
+      {q:"Which of these does NOT require the panini press?",options:["Tuna Melt","A&B Grilled Cheese","The Roast","Panini"],answer:2,fact:"The Roast does not go on the panini press. Tuna Melt, A&B Grilled Cheese, and Panini all require it."},
+      {q:"How many meats are in the Italian and what is the total weight?",options:["2 meats, 3 oz total","3 meats, 4.5 oz total","2 meats, 5 oz total","3 meats, 6 oz total"],answer:1,fact:"Italian = Salami + Capicola + Prosciutto = 3 meats at 1.5 oz each = 4.5 oz total."},
+      {q:"The Avocado BLT requires bacon cooked how?",options:["Chewy and soft","Crispy only","Slightly crispy","Any style"],answer:1,fact:"Bacon MUST be crispy on the Avocado BLT. Use 4 slices and slice avocado fresh per order."},
+      {q:"What spread goes on the Pastrami Reuben, and how much?",options:["Pesto Mayo 1oz one side","Thousand Island 1.5oz BOTH sides","Garlic Aioli 1oz one side","Mustard 1oz both sides"],answer:1,fact:"Thousand Island goes on BOTH sides at 1.5 oz — more than standard. Always drain sauerkraut before adding."},
+      {q:"Why must artichokes and olives be drained on the Greek Wrap?",options:["They're too salty otherwise","Excess brine makes the wrap soggy","They're warmed first","They need to be chopped first"],answer:1,fact:"Drain artichokes and olives well — excess brine soaks the tortilla and the wrap falls apart."},
+      {q:"Old Towne Club has three proteins. What are they and their amounts?",options:["Turkey 2oz, Salami 2oz, Bacon 3 slices","Turkey 2.5oz, Ham 2.5oz, Bacon 3 slices","Ham 3oz, Turkey 2oz, Prosciutto 1oz","Turkey 3oz, Ham 2oz, Pepperoni 1oz"],answer:1,fact:"Old Towne Club = Turkey (2.5oz) + Ham (2.5oz) + Bacon (3 slices). It's one of the heartiest builds."},
+      {q:"Where does the balsamic drizzle go on The Roast?",options:["Under the cheese","Mixed into the spread","On TOP after building","Between arugula and tomato"],answer:2,fact:"Balsamic drizzle always goes on TOP after the sandwich is fully built."},
+      {q:"How many apple slices go on the A&B Grilled Cheese, and how should they be cut?",options:["3 slices thick","5 slices thin","4 slices any thickness","6 slices thin"],answer:1,fact:"5 thin apple slices on the A&B Grilled Cheese. Thin slices integrate better when pressed."},
+      {q:"What bread does the Boulderite use?",options:["Sourdough","Hoagie Roll","Organic 21-Grain or Sliced Whole Wheat","Croissant"],answer:2,fact:"Boulderite uses Organic 21-Grain or Sliced Whole Wheat. It can be grilled or toasted."},
+      {q:"The Lafilly Cheese Steak requires onions and banana peppers cooked on the grill. How long?",options:["2–3 minutes","5–7 minutes","10 minutes","They go on raw"],answer:1,fact:"Onions and banana peppers cook 5–7 minutes until soft and slightly caramelized. Season with salt and pepper."},
+    ]
+  },
+  portions:{
+    icon:'⚖️', name:'Portions & Weights', desc:'Meat weights, scoop sizes, and ingredient amounts',
+    questions:[
+      {q:"How much deli meat goes on a full sandwich?",options:["2–3 oz","4 oz","5–6 oz","6.5–7 oz"],answer:1,fact:"Every full sandwich gets 4 oz of deli meat. Always weigh — never eyeball proteins."},
+      {q:"When is a half sandwich served?",options:["For kids meals","For smaller appetites","Catering only","Whenever a customer asks"],answer:2,fact:"Half sandwiches are catering only — not a regular in-store menu item."},
+      {q:"What tool portions tuna, chicken, and egg salads?",options:["A ladle","An ice cream scoop (5 oz)","A kitchen scale only","A slotted spoon"],answer:1,fact:"Use the ice cream scoop (5 oz) for all salad proteins — consistent every time."},
+      {q:"How much lettuce goes on a standard sandwich?",options:["2 oz","3 oz","1 oz — small handful","As much as fits"],answer:2,fact:"Only 1 oz (small handful) of lettuce. Too much makes the sandwich slide apart."},
+      {q:"What is the standard cheese portion?",options:["1 slice = 1 oz","2 slices = 1.5 oz","3 slices = 2 oz","1 slice = 0.5 oz"],answer:1,fact:"2 slices = 1.5 oz is standard. Make sure cheese covers the protein."},
+      {q:"How much spread for mayo, mustard, or aioli?",options:["0.5 oz (1 tbsp)","1 oz (2 tbsp)","2 oz (4 tbsp)","1.5 oz (3 tbsp)"],answer:1,fact:"1 oz (2 tablespoons) for standard spreads. Heavy spreads like hummus use 2 oz (4 tbsp)."},
+      {q:"How many tomato slices and what do they weigh?",options:["2 slices = 1.5 oz","3 slices = 2.5 oz","4 slices = 3 oz","3 slices = 1.5 oz"],answer:1,fact:"3 tomato slices = 2.5 oz. Consistent every time."},
+      {q:"How much avocado per sandwich?",options:["½ avocado = 4 oz","¼ avocado = 2 oz","⅛ avocado = 1 oz","¼ avocado = 3 oz"],answer:1,fact:"¼ avocado = 2 oz. Always slice fresh per order."},
+      {q:"On the Tuna Melt, how much lettuce vs. a regular sandwich?",options:["Same (1 oz)","Double (2 oz)","Half (½ oz)","No lettuce"],answer:2,fact:"Only ½ oz lettuce on the Tuna Melt because it gets pressed. Too much = soggy."},
+      {q:"Each meat in the Italian gets how much?",options:["2 oz each","1.5 oz each","1 oz each","3 oz total split evenly"],answer:1,fact:"Each of the three meats gets 1.5 oz = 4.5 oz total."},
+    ]
+  },
+  operations:{
+    icon:'📋', name:'Operations & Orders', desc:'Phone orders, catering, bakery procedures',
+    questions:[
+      {q:"How much advance notice is required for whole bakery orders?",options:["24 hours","48 hours","72 hours","1 week"],answer:2,fact:"72-hour advance notice required. Always confirm the due date before accepting."},
+      {q:"When taking a bakery order, what info must you always collect?",options:["Name only","Name, phone, pickup/due date and time","Name and email","Name, phone, and payment"],answer:1,fact:"Always collect: name, phone number, and pickup/due date and time. For delivery, also get the address."},
+      {q:"A customer calls about food truck catering. What do you do?",options:["Quote them pricing","Take the order directly","Direct to eatsandsweetscolorado@gmail.com","Check tablet for pricing"],answer:2,fact:"All food truck inquiries go to eatsandsweetscolorado@gmail.com — no exceptions."},
+      {q:"When can a Lemon Pie be sold with less than 72 hours notice?",options:["Never","If a manager approves","If shop is stocked AND backup in bakery fridge","If the customer is a regular"],answer:2,fact:"Lemon Pies and Cheesecakes can be sold under 72 hours IF the shop is stocked AND there's backup in the bakery fridge."},
+      {q:"What cake sizes does Eats & Sweets offer?",options:["6\", 8\", 10\", full sheet","6\", 8\", 12\", half-sheet tray","Small, medium, large, full sheet","6\", 9\", 12\", quarter sheet"],answer:1,fact:"Cake sizes: 6\", 8\", 12\", and Half-Sheet Tray. All cakes are layered/tiered."},
+      {q:"Can quiche be made with custom ingredients?",options:["No, set recipe only","Yes — any ingredients in the shop","Only with 72 hours notice","Only standard veggie quiche"],answer:1,fact:"Quiche can be made with any ingredients in the shop. Regular and gluten-free options available."},
+      {q:"If unsure about a bakery inquiry, where do you share it?",options:["Post on Instagram","Email the owner","Bakery Channel in Slack","Leave a note by register"],answer:2,fact:"When in doubt, take as much info as possible and share it to the Bakery Channel in Slack."},
+      {q:"What is the food truck pricing structure?",options:["Flat rate per hour","Down payment for 1st hour, then cost of product + time","Cost per item only","Hourly rate, 2hr minimum"],answer:1,fact:"Food truck = down payment for the 1st hour, then cost of product + time."},
+      {q:"Standard cake flavors are:",options:["Vanilla, Chocolate, Lemon, Carrot","Vanilla, Chocolate, Carrot, Red Velvet","Vanilla, Chocolate, Red Velvet, Funfetti","Chocolate, Carrot, Lemon, Marble"],answer:1,fact:"Standard flavors: Vanilla, Chocolate, Carrot, and Red Velvet. GF and Vegan options also available."},
+    ]
+  },
+  closing:{
+    icon:'🔒', name:'Closing & Cleaning', desc:'End-of-day procedures, equipment breakdown, register',
+    questions:[
+      {q:"Espresso machine cleaning powder — how much per paddle?",options:["Use dish soap, 1 tsp","No more than ⅛ tsp cleaning powder","Vinegar solution, flush twice","1 full tsp cleaning powder"],answer:1,fact:"No more than ⅛ tsp per paddle. Replace inserts with solid cleaning inserts, hold middle button until lights flash, then run again with NO cleaner."},
+      {q:"What must the register drawer be set to at close?",options:["$100 exactly","$125 exactly","$150 exactly","$200 exactly"],answer:2,fact:"Exactly $150 at close. Remove large bills first, leave as many 1s and 5s as you can."},
+      {q:"Grill teeth after deep cleaning should look how?",options:["Dark brown with some char","Silver with minimal to no black spotting","Golden brown","Any clean appearance"],answer:1,fact:"Grill teeth should be SILVER with minimal to no black spotting. Grooves should have no burned food."},
+      {q:"What do you do with soups at end of night?",options:["Leave in warmers","Flip into new clean containers, store in produce fridge","Throw away leftovers","Cover and leave on line"],answer:1,fact:"Flip into new clean containers, scrub old containers, wipe warmers with sani, store in produce fridge."},
+      {q:"Do trip trackers count toward the deposit?",options:["No — never","Yes — they count toward deposit","Only on weekends","Only if over $20"],answer:1,fact:"Trip trackers DO count toward the deposit. Gift card amounts do NOT. Never leave trip trackers in the drawer overnight."},
+      {q:"At close, proteins and veggies go into:",options:["Same containers","New clean containers with new bakery wax, lids on below-line containers","Covered directly in the line","Zip-lock bags"],answer:1,fact:"New clean containers with new bakery wax. Lids on all containers below the line."},
+      {q:"Correct technique for cleaning a warm grill?",options:["Spray cleaner on hot grill","Soak rag in warm water, wring out, press on WARM grill, lightly scrub","Use dry steel wool on hot grill","Pour cold water on grill"],answer:1,fact:"Soak rag in warm water, wring out, press on WARM (not hot or cold) grill, then lightly scrub."},
+      {q:"What's easy to forget on the final closing checklist?",options:["Grill, soups, espresso machine","Inside of microwave, nighttime temps, bathroom, bag on cones, sinks","Bread, bacon, soup pulled for morning","Ice cream, sandwich line, register"],answer:1,fact:"Easy to forget: inside of microwave, nighttime temps, bathroom, bag on ice cream cones, all sinks."},
+      {q:"Before going out the door, what must be confirmed off?",options:["Just oven and grill","Oven, grill, soup warmer, steamer, hood, swamp cooler, fans, all lights","Just lights and oven","Main breaker and lights"],answer:1,fact:"ALL off: Oven, grill, soup warmer, steamer — AND hood, swamp cooler, fans, lights (kitchen + FOH + ice cream case)."},
+    ]
+  },
+  catering:{
+    icon:'🍽️', name:'Catering & Pricing', desc:'Catering menu prices, platters, and WOW account',
+    questions:[
+      {q:"Standard sandwich platter cost and how many does it feed?",options:["$40, feeds 4 (snack 8)","$45, feeds 5 (snack 10)","$50, feeds 6 (snack 12)","$55, feeds 8 (snack 15)"],answer:1,fact:"Standard Platter = $45, feeds 5 as a meal or 10 as a snack. 5 × 8-inch sandwiches cut in half."},
+      {q:"Bagged/Boxed Lunch cost and what's included?",options:["$10 — full sandwich + chips","$12.50 — half sandwich + chips + cookie + napkin","$15 — full sandwich + chips + cookie + drink","$12.50 — full sandwich + chips + cookie"],answer:1,fact:"Boxed Lunch = $12.50: half sandwich, chips, cookie, napkin. Full sandwich upgrade = $17.50."},
+      {q:"Large fruit bowl cost and how many does it serve?",options:["$50, 10–12 people","$65, 15 people","$85, ~20 people","$75, 15–18 people"],answer:2,fact:"Large Fruit Bowl = $85, serves ~20 people (~$4.25/person)."},
+      {q:"WOW GF Mini Cupcakes — what flavor is available?",options:["Any flavor","Chocolate ONLY — no vanilla","Vanilla ONLY","Vanilla or chocolate"],answer:1,fact:"WOW GF Mini Cupcakes are chocolate ONLY. Use dedicated GF equipment and label packaging clearly."},
+      {q:"How many pieces in a large cookie/brownie platter?",options:["30 pieces","50 pieces","65 pieces","80 pieces"],answer:2,fact:"Large Cookie & Brownie Platter = 65 pieces, serves ~30. Small = 30 pieces, serves ~17."},
+      {q:"WOW Grown-Up Sandwich Platter: how many sandwiches and how arranged?",options:["10 mini sandwiches cut in thirds","5 full 8-inch sandwiches cut in half, arranged by type","8 half-sandwiches in a circle","5 full sandwiches uncut, stacked"],answer:1,fact:"WOW Grown-Up = 5 full 8\" sandwiches cut in half (10 halves). Arrange by sandwich type."},
+      {q:"What is included in a Meat & Cheese Board?",options:["Meats, cheeses, crackers, olives","Meats, cheeses, fruit, nuts","Meats, cheeses, bread, hummus","Assorted meats and cheeses only"],answer:0,fact:"Meat & Cheese Board ($120, serves 12–16): assorted meats, cheeses, crackers, and olives."},
+      {q:"Small salad bowl price and how many does it serve?",options:["$20, 4 people","$25, 5 people","$30, 6 people","$35, 7 people"],answer:1,fact:"Small Salad Bowl = $25, serves 5 people ($5/person). Lettuce, cucumber, tomato, banana pepper, carrot."},
+    ]
+  },
+  food_safety:{
+    icon:'🧼', name:'Food Safety', desc:'Sanitation, temperatures, and safe handling',
+    questions:[
+      {q:"Triple sink steps in order?",options:["Rinse, Wash, Sanitize","Sanitize, Wash, Rinse","Wash, Rinse, Sanitize","Sanitize, Rinse, Wash"],answer:2,fact:"Triple sink: 1) Wash (hot soapy), 2) Rinse (cold water), 3) Sanitize (cold sanitizing solution). Order matters."},
+      {q:"Where do clean knives go after use (except during closing)?",options:["Bucket of hot water","Designated knife rack","Sanitizing solution","On the cutting board"],answer:1,fact:"Clean knives go on the knife rack immediately. NEVER leave knives in water or the sink."},
+      {q:"Cold items must be kept at what temperature?",options:["Below 50°F","At or below 40°F","Below 45°F","Between 35–38°F exactly"],answer:1,fact:"Cold items must stay at 40°F or below. Check and record temperatures regularly."},
+      {q:"Cleaning priority order — FOH or BOH first?",options:["Back of House first","Front of House first, then Back of House","Both at same time","BOH at open, FOH at close"],answer:1,fact:"Front of House first, then Back of House. Customer-facing area stays presentable."},
+      {q:"When can you wrap desserts before close?",options:["30 min before close","After the open sign is off","Whenever it gets slow","At your discretion"],answer:1,fact:"No dessert wrapping until AFTER close (after the open light is off). Keep serving late customers."},
+      {q:"A food item is dropped. You should:",options:["Pick it up if it looks clean","Discard it — no exceptions","Rinse it off and use it","Ask a manager"],answer:1,fact:"Discard any dropped food — no exceptions. Food safety is non-negotiable."},
+    ]
+  }
+};
+
+// ─── STATE ───────────────────────────────────────────────────────────────────
+let staffName = '';
+let selectedCategories = [];
+let quizQuestions = [];
+let currentIndex = 0;
+let score = 0;
+let answered = false;
+let sessionHistory = [];
+
+// ─── NAME SCREEN ─────────────────────────────────────────────────────────────
+function validateName() {
+  const val = document.getElementById('nameInput').value.trim();
+  document.getElementById('nameBtn').disabled = val.length < 2;
+  document.getElementById('nameInput').classList.remove('error');
+  document.getElementById('nameError').style.display = 'none';
+}
+
+function submitName() {
+  const val = document.getElementById('nameInput').value.trim();
+  if (val.length < 2) {
+    document.getElementById('nameInput').classList.add('error');
+    document.getElementById('nameError').style.display = 'block';
+    return;
+  }
+  staffName = val;
+  document.getElementById('name-screen').style.display = 'none';
+  document.getElementById('category-screen').style.display = 'block';
+  document.getElementById('catGreeting').textContent = `Hi ${staffName.split(' ')[0]}! Choose Your Quiz`;
+  buildCategoryPicker();
+}
+
+// ─── CATEGORY PICKER ─────────────────────────────────────────────────────────
+function buildCategoryPicker() {
+  const grid = document.getElementById('catGrid');
+  grid.innerHTML = '';
+  Object.entries(QUESTION_BANK).forEach(([key, cat]) => {
+    const div = document.createElement('div');
+    div.className = 'cat-card';
+    div.dataset.key = key;
+    div.innerHTML = `<div class="cat-icon">${cat.icon}</div><div class="cat-name">${cat.name}</div><div class="cat-desc">${cat.desc}</div><div class="cat-count">${cat.questions.length} questions</div>`;
+    div.onclick = () => toggleCategory(key, div);
+    grid.appendChild(div);
+  });
+}
+
+function toggleCategory(key, el) {
+  const idx = selectedCategories.indexOf(key);
+  if (idx > -1) { selectedCategories.splice(idx,1); el.classList.remove('selected'); }
+  else { selectedCategories.push(key); el.classList.add('selected'); }
+  const total = selectedCategories.reduce((s,k) => s + QUESTION_BANK[k].questions.length, 0);
+  document.getElementById('startBtn').disabled = selectedCategories.length === 0;
+  document.getElementById('selectedCount').textContent = selectedCategories.length > 0 ? `${total} questions available` : '';
+}
+
+function selectAll() {
+  selectedCategories = [];
+  document.querySelectorAll('.cat-card').forEach(el => el.classList.remove('selected'));
+  Object.keys(QUESTION_BANK).forEach(k => {
+    selectedCategories.push(k);
+    document.querySelector(`[data-key="${k}"]`).classList.add('selected');
+  });
+  const total = selectedCategories.reduce((s,k) => s + QUESTION_BANK[k].questions.length, 0);
+  document.getElementById('selectedCount').textContent = `${total} questions available`;
+  document.getElementById('startBtn').disabled = false;
+}
+
+// ─── QUIZ ────────────────────────────────────────────────────────────────────
+function startQuiz() {
+  let pool = [];
+  selectedCategories.forEach(k => {
+    QUESTION_BANK[k].questions.forEach(q => pool.push({...q, category: QUESTION_BANK[k].name, categoryKey: k}));
+  });
+  for (let i = pool.length-1; i > 0; i--) {
+    const j = Math.floor(Math.random()*(i+1));
+    [pool[i],pool[j]] = [pool[j],pool[i]];
+  }
+  quizQuestions = pool.slice(0, Math.min(pool.length, 15));
+  currentIndex = 0; score = 0; sessionHistory = []; answered = false;
+  document.getElementById('category-screen').style.display = 'none';
+  document.getElementById('quiz-screen').style.display = 'block';
+  document.getElementById('headerScore').style.display = 'block';
+  updateHeaderScore();
+  renderQuestion();
+}
+
+function renderQuestion() {
+  const q = quizQuestions[currentIndex];
+  const total = quizQuestions.length;
+  document.getElementById('progressBar').style.width = `${(currentIndex/total)*100}%`;
+  document.getElementById('progressLabel').textContent = `Question ${currentIndex+1} of ${total}`;
+  document.getElementById('qCategory').textContent = q.category;
+  document.getElementById('qText').textContent = q.q;
+  const grid = document.getElementById('optionsGrid');
+  grid.innerHTML = '';
+  q.options.forEach((opt,i) => {
+    const btn = document.createElement('button');
+    btn.className = 'option-btn';
+    btn.textContent = opt;
+    btn.onclick = () => selectAnswer(i);
+    grid.appendChild(btn);
+  });
+  document.getElementById('feedbackBox').style.display = 'none';
+  document.getElementById('aiExplanation').style.display = 'none';
+  document.getElementById('nextBtn').style.display = 'none';
+  answered = false;
+}
+
+function selectAnswer(idx) {
+  if (answered) return;
+  answered = true;
+  const q = quizQuestions[currentIndex];
+  const correct = idx === q.answer;
+  if (correct) score++;
+  updateHeaderScore();
+  document.querySelectorAll('.option-btn').forEach((btn,i) => {
+    btn.disabled = true;
+    if (i === q.answer) btn.classList.add('correct');
+    if (i === idx && !correct) btn.classList.add('wrong');
+  });
+  const fb = document.getElementById('feedbackBox');
+  fb.className = 'feedback-box ' + (correct ? 'correct' : 'wrong');
+  document.getElementById('feedbackHead').textContent = correct ? '✓ Correct!' : '✗ Not quite.';
+  document.getElementById('feedbackBody').textContent = correct
+    ? "Great job! See the coach's note below."
+    : `The correct answer is: "${q.options[q.answer]}"`;
+  fb.style.display = 'block';
+  sessionHistory.push({q:q.q, correct, chosen:q.options[idx], right:q.options[q.answer], category:q.category});
+  const aiBox = document.getElementById('aiExplanation');
+  aiBox.style.display = 'block';
+  document.getElementById('aiBody').innerHTML = `<div class="dot-pulse"><span></span><span></span><span></span></div>`;
+  getAIExplanation(q, correct, idx);
+  document.getElementById('nextBtn').style.display = 'block';
+}
+
+async function getAIExplanation(q, correct, chosenIdx) {
+  const prompt = `You are a friendly trainer at Eats & Sweets, a sandwich and bakery shop in Lafayette, CO. A staff trainee just answered a quiz question.
+
+Question: "${q.q}"
+Their answer: "${q.options[chosenIdx]}" (${correct ? 'CORRECT' : 'INCORRECT'})
+Correct answer: "${q.options[q.answer]}"
+Key fact: ${q.fact}
+
+Write a 2-3 sentence coaching tip that: ${correct ? 'reinforces why this is right and gives a useful memory trick or pro tip' : 'gently explains the right answer and why it matters in practice'}. Be warm, practical, specific to a sandwich shop. Speak directly as "you". Under 60 words. No bullet points.`;
+  try {
+    const res = await fetch('https://api.anthropic.com/v1/messages', {
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({model:'claude-sonnet-4-6', max_tokens:1000, messages:[{role:'user',content:prompt}]})
+    });
+    const data = await res.json();
+    const text = data.content?.find(b => b.type==='text')?.text || q.fact;
+    document.getElementById('aiBody').textContent = text;
+  } catch {
+    document.getElementById('aiBody').textContent = q.fact;
+  }
+}
+
+function updateHeaderScore() {
+  document.getElementById('headerScoreNum').textContent = `${score}/${currentIndex+(answered?1:0)}`;
+}
+
+function nextQuestion() {
+  currentIndex++;
+  if (currentIndex >= quizQuestions.length) showResults();
+  else renderQuestion();
+}
+
+// ─── RESULTS + LOGGING ───────────────────────────────────────────────────────
+async function showResults() {
+  document.getElementById('quiz-screen').style.display = 'none';
+  document.getElementById('results-screen').style.display = 'block';
+
+  const total = quizQuestions.length;
+  const pct = score / total;
+  const pctDisplay = Math.round(pct * 100);
+  const passed = pct >= PASS_THRESHOLD;
+  const cats = selectedCategories.map(k => QUESTION_BANK[k].name).join(', ');
+  const missed = sessionHistory.filter(h => !h.correct);
+  const missedStr = missed.length > 0 ? missed.map(h => `• ${h.q} → Correct: ${h.right}`).join('\n') : 'None — perfect score!';
+  const timestamp = new Date().toLocaleString('en-US', {timeZone:'America/Denver'});
+
+  // Show pass banner
+  if (passed) {
+    document.getElementById('passBanner').style.display = 'block';
+    document.getElementById('passBannerSub').textContent = `${pctDisplay}% — notifying the team on Slack!`;
+  }
+
+  // Results card
+  let emoji = '📚', title = 'Keep Practicing', sub = `You need 90% to pass. Review what you missed and try again — you've got this, ${staffName.split(' ')[0]}!`;
+  if (pct >= 0.90) { emoji = '🏆'; title = 'Outstanding!'; sub = `${staffName.split(' ')[0]}, you crushed it. Welcome to the A-team.`; }
+  else if (pct >= 0.75) { emoji = '👍'; title = 'Good Effort!'; sub = `Almost there, ${staffName.split(' ')[0]}. Review the missed questions and try again.`; }
+
+  document.getElementById('resultsEmoji').textContent = emoji;
+  document.getElementById('resultsTitle').textContent = title;
+  document.getElementById('resultsSub').textContent = sub;
+  document.getElementById('scoreBig').innerHTML = `${score}<span>/${total}</span>`;
+  document.getElementById('scorePct').textContent = `${pctDisplay}% — ${passed ? '✅ Passed!' : '❌ Not yet — 90% required'}`;
+  document.getElementById('bdCorrect').textContent = score;
+  document.getElementById('bdWrong').textContent = total - score;
+
+  // Review
+  const rl = document.getElementById('reviewList');
+  if (missed.length === 0) {
+    rl.innerHTML = '<p style="text-align:center;color:var(--correct);font-weight:600;padding:20px 0;">🎯 Perfect score — nothing to review!</p>';
+  } else {
+    rl.innerHTML = `<h3>Review: Questions You Missed</h3>`;
+    missed.forEach(h => {
+      const div = document.createElement('div');
+      div.className = 'review-item ri-wrong';
+      div.innerHTML = `<div class="ri-q">${h.q}</div><div class="ri-answer">Your answer: <span class="bad">${h.chosen}</span><br>Correct: <span class="good">${h.right}</span><br><span style="font-size:0.75rem;opacity:0.7;">${h.category}</span></div>`;
+      rl.appendChild(div);
+    });
+  }
+
+  // Log to Google Sheets + Slack via Claude API
+  const logEl = document.getElementById('logStatus');
+  logEl.innerHTML = `<div class="dot-pulse"><span></span><span></span><span></span></div> Saving results…`;
+
+  try {
+    const loggingPrompt = `You are an assistant that logs quiz results. Do the following two tasks:
+
+1. Append a row to Google Sheets spreadsheet named "Eats & Sweets — Staff Quiz Results" (create it if it doesn't exist) with these columns: Timestamp | Name | Categories | Score | Percentage | Passed | Missed Questions
+   Row data:
+   - Timestamp: ${timestamp}
+   - Name: ${staffName}
+   - Categories: ${cats}
+   - Score: ${score}/${total}
+   - Percentage: ${pctDisplay}%
+   - Passed: ${passed ? 'YES' : 'NO'}
+   - Missed Questions: ${missedStr}
+
+2. ${passed ? `Send a message to Slack channel ID C0864QKD9DL (#eats-and-sweets) that says exactly:
+"✅ *${staffName}* just passed the Eats & Sweets training quiz! 🎉
+*${pctDisplay}%* on ${cats}
+They're ready for the floor. Great work! 💪"` : `Do NOT send any Slack message. The employee did not pass (scored ${pctDisplay}%, need 90%).`}
+
+Confirm both tasks are done.`;
+
+    const res = await fetch('https://api.anthropic.com/v1/messages', {
+      method: 'POST',
+      headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify({
+        model: 'claude-sonnet-4-6',
+        max_tokens: 1000,
+        messages: [{role:'user', content: loggingPrompt}],
+        mcp_servers: [
+          {type:'url', url:'https://mcp.slack.com/mcp', name:'slack'},
+          {type:'url', url:'https://drivemcp.googleapis.com/mcp/v1', name:'google-drive'}
+        ]
+      })
+    });
+    const data = await res.json();
+    const responseText = data.content?.find(b => b.type==='text')?.text || '';
+    if (data.error) throw new Error(data.error.message);
+    logEl.className = 'log-status success';
+    logEl.textContent = passed
+      ? '✅ Results saved to Google Sheets & posted to #eats-and-sweets'
+      : '✅ Results saved to Google Sheets';
+  } catch(e) {
+    logEl.className = 'log-status error';
+    logEl.textContent = '⚠️ Could not save results automatically — please screenshot your score.';
+    console.error('Logging error:', e);
+  }
+}
+
+function restartSame() {
+  document.getElementById('results-screen').style.display = 'none';
+  document.getElementById('passBanner').style.display = 'none';
+  startQuiz();
+}
+
+function goHome() {
+  document.getElementById('quiz-screen').style.display = 'none';
+  document.getElementById('results-screen').style.display = 'none';
+  document.getElementById('passBanner').style.display = 'none';
+  document.getElementById('category-screen').style.display = 'block';
+  document.getElementById('headerScore').style.display = 'none';
+  score = 0; currentIndex = 0; answered = false; selectedCategories = [];
+  document.querySelectorAll('.cat-card').forEach(el => el.classList.remove('selected'));
+  document.getElementById('startBtn').disabled = true;
+  document.getElementById('selectedCount').textContent = '';
+}
+</script>
+</body>
+</html>
