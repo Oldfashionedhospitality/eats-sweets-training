@@ -168,7 +168,7 @@
 <div id="quiz-screen">
   <div class="progress-bar-wrap"><div class="progress-bar" id="progressBar"></div></div>
   <div class="progress-label">
-    <span id="progressLabel">Question 1 of 10</span>
+    <span id="progressLabel">Question 1 of 20</span>
     <span id="progressCategory"></span>
   </div>
   <div class="q-category" id="qCategory"></div>
@@ -240,6 +240,13 @@ const QUESTION_BANK = {
       {q:"How many apple slices go on the A&B Grilled Cheese, and how should they be cut?",options:["3 slices thick","5 slices thin","4 slices any thickness","6 slices thin"],answer:1,fact:"5 thin apple slices on the A&B Grilled Cheese. Thin slices integrate better when pressed."},
       {q:"What bread does the Boulderite use?",options:["Sourdough","Hoagie Roll","Organic 21-Grain or Sliced Whole Wheat","Croissant"],answer:2,fact:"Boulderite uses Organic 21-Grain or Sliced Whole Wheat. It can be grilled or toasted."},
       {q:"The Lafilly Cheese Steak requires onions and banana peppers cooked on the grill. How long?",options:["2–3 minutes","5–7 minutes","10 minutes","They go on raw"],answer:1,fact:"Onions and banana peppers cook 5–7 minutes until soft and slightly caramelized. Season with salt and pepper."},
+      {q:"What spread goes on The Market veggie sandwich?",options:["Garlic Aioli","Hummus","Pesto Mayo","Mustard"],answer:2,fact:"Pesto Mayo on The Market. It's a veggie sandwich — make veggies look abundant and fresh."},
+      {q:"The Panini uses two cheeses. What are they?",options:["Cheddar and Swiss","Mozzarella and Provolone","Havarti and Cheddar","Provolone and Swiss"],answer:1,fact:"Panini = Mozzarella + Provolone. Keep spinach moderate — too much gets soggy on the press."},
+      {q:"What goes on TOP of The Roast after it's fully built?",options:["Extra garlic aioli","Balsamic drizzle","Olive oil","Chipotle mayo"],answer:1,fact:"Balsamic drizzle goes on TOP after building — not mixed in. It's the finishing touch that makes The Roast."},
+      {q:"The Pastrami Reuben uses Thousand Island on how many sides of the bread?",options:["One side only","Both sides","Neither","Only the top"],answer:1,fact:"Thousand Island goes on BOTH sides at 1.5 oz — more than standard. Always drain sauerkraut too."},
+      {q:"For a grilled sandwich, how long should it rest before cutting?",options:["Cut immediately","30–60 seconds","2 minutes","5 minutes"],answer:1,fact:"Rest grilled sandwiches 30–60 seconds before cutting — lets the cheese set so ingredients don't slide out."},
+      {q:"What is the build order for vegetables on a standard sandwich?",options:["Tomato first, then lettuce","Lettuce/greens ALWAYS first, then tomato, onion, others","Onion first","Any order"],answer:1,fact:"Lettuce/greens always go FIRST — they act as a cushion and keep other veggies from sliding off the protein."},
+      {q:"What type of bread does the Italian use?",options:["Sourdough","Croissant","Hoagie Roll (8 inch)","Marble Rye"],answer:2,fact:"Italian goes on an 8-inch hoagie roll with three meats: salami, capicola, and prosciutto at 1.5 oz each."},
     ]
   },
   portions:{
@@ -307,6 +314,10 @@ const QUESTION_BANK = {
       {q:"Cleaning priority order — FOH or BOH first?",options:["Back of House first","Front of House first, then Back of House","Both at same time","BOH at open, FOH at close"],answer:1,fact:"Front of House first, then Back of House. Customer-facing area stays presentable."},
       {q:"When can you wrap desserts before close?",options:["30 min before close","After the open sign is off","Whenever it gets slow","At your discretion"],answer:1,fact:"No dessert wrapping until AFTER close (after the open light is off). Keep serving late customers."},
       {q:"A food item is dropped. You should:",options:["Pick it up if it looks clean","Discard it — no exceptions","Rinse it off and use it","Ask a manager"],answer:1,fact:"Discard any dropped food — no exceptions. Food safety is non-negotiable."},
+      {q:"What must you do with your hands before handling food after touching your face or phone?",options:["Wipe on apron","Wash hands thoroughly","Use hand sanitizer only","Nothing if gloves are on"],answer:1,fact:"Wash hands thoroughly every time — after touching your face, phone, hair, or anything non-food. Gloves aren't a substitute for handwashing."},
+      {q:"How should sanitation buckets be set up?",options:["Hot water only","Proper mix of water and sanitizing solution","Dish soap and water","Cold water only"],answer:1,fact:"Sanitation buckets use the correct mix of water and sanitizing solution — not just water or soap. Keep them refreshed throughout the shift."},
+      {q:"When should you change your gloves?",options:["Only when they tear","After handling raw meat, touching your face, or switching tasks","Once per hour","Only when a manager asks"],answer:1,fact:"Change gloves after handling raw proteins, touching your face or phone, or switching between tasks like handling food and money."},
+      {q:"Raw meat and proteins should be stored where in the fridge relative to produce?",options:["On the same shelf is fine","Above produce","Below produce — never above","On the door"],answer:2,fact:"Raw proteins always go BELOW produce — never above. This prevents any drips from contaminating ready-to-eat foods."},
     ]
   }
 };
@@ -378,16 +389,58 @@ function selectAll() {
 }
 
 // ─── QUIZ ────────────────────────────────────────────────────────────────────
-function startQuiz() {
-  let pool = [];
-  selectedCategories.forEach(k => {
-    QUESTION_BANK[k].questions.forEach(q => pool.push({...q, category: QUESTION_BANK[k].name, categoryKey: k}));
-  });
-  for (let i = pool.length-1; i > 0; i--) {
+const TOTAL_QUESTIONS = 20;
+const GUARANTEED = {
+  sandwiches:  6,
+  portions:    4,
+  closing:     3,
+  operations:  3,
+  food_safety: 2,
+  catering:    2,
+};
+
+function shuffle(arr) {
+  for (let i = arr.length-1; i > 0; i--) {
     const j = Math.floor(Math.random()*(i+1));
-    [pool[i],pool[j]] = [pool[j],pool[i]];
+    [arr[i],arr[j]] = [arr[j],arr[i]];
   }
-  quizQuestions = pool.slice(0, Math.min(pool.length, 15));
+  return arr;
+}
+
+function startQuiz() {
+  const allSelected = Object.keys(QUESTION_BANK).every(k => selectedCategories.includes(k));
+  let quizPool = [];
+
+  if (allSelected) {
+    // Weighted guaranteed pull
+    Object.entries(GUARANTEED).forEach(([key, minCount]) => {
+      const cat = QUESTION_BANK[key];
+      const shuffled = shuffle([...cat.questions]);
+      shuffled.slice(0, Math.min(minCount, shuffled.length)).forEach(q => {
+        quizPool.push({...q, category: cat.name, categoryKey: key});
+      });
+    });
+    // Fill remaining slots from leftover questions
+    let leftovers = [];
+    Object.entries(QUESTION_BANK).forEach(([key, cat]) => {
+      const guaranteed = GUARANTEED[key] || 0;
+      shuffle([...cat.questions]).slice(guaranteed).forEach(q => {
+        leftovers.push({...q, category: cat.name, categoryKey: key});
+      });
+    });
+    shuffle(leftovers).slice(0, TOTAL_QUESTIONS - quizPool.length).forEach(q => quizPool.push(q));
+    shuffle(quizPool);
+  } else {
+    // Partial selection — pull evenly from selected categories
+    selectedCategories.forEach(k => {
+      const cat = QUESTION_BANK[k];
+      shuffle([...cat.questions]).forEach(q => quizPool.push({...q, category: cat.name, categoryKey: k}));
+    });
+    shuffle(quizPool);
+    quizPool = quizPool.slice(0, Math.min(quizPool.length, TOTAL_QUESTIONS));
+  }
+
+  quizQuestions = quizPool;
   currentIndex = 0; score = 0; sessionHistory = []; answered = false;
   document.getElementById('category-screen').style.display = 'none';
   document.getElementById('quiz-screen').style.display = 'block';
