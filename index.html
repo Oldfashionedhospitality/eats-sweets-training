@@ -321,7 +321,7 @@ const QUESTION_BANK = {
       {q:"Which sundae does NOT include peanuts?",options:["Original Sundae","Brownie Sundae","Hot Fudge Sundae","Banana Split"],answer:2,fact:"The Hot Fudge Sundae does not include peanuts — just ice cream, whipped cream, cherry, and hot fudge."},
       {q:"A customer orders a milkshake but doesn't specify a flavor. What do you do?",options:["Default to vanilla","Make it chocolate — most popular","Ask the customer for their choice of ice cream","Pick whatever is fullest in the case"],answer:2,fact:"Milkshakes are made with the customer's choice of ice cream — always ask. Never assume a flavor."},
     ]
-  }
+  },
   food_safety:{
     icon:'🧼', name:'Food Safety', desc:'Sanitation, temperatures, and safe handling',
     questions:[
@@ -408,13 +408,13 @@ function selectAll() {
 // ─── QUIZ ────────────────────────────────────────────────────────────────────
 const TOTAL_QUESTIONS = 20;
 const GUARANTEED = {
-  sandwiches:  5,
-  portions:    3,
-  closing:     3,
-  operations:  2,
-  food_safety: 2,
+  sandwiches:  9,
+  portions:    4,
   ice_cream:   3,
-  catering:    2,
+  closing:     2,
+  food_safety: 1,
+  operations:  1,
+  catering:    0,
 };
 
 function shuffle(arr) {
