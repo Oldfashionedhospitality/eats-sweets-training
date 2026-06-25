@@ -305,6 +305,23 @@ const QUESTION_BANK = {
       {q:"Small salad bowl price and how many does it serve?",options:["$20, 4 people","$25, 5 people","$30, 6 people","$35, 7 people"],answer:1,fact:"Small Salad Bowl = $25, serves 5 people ($5/person). Lettuce, cucumber, tomato, banana pepper, carrot."},
     ]
   },
+  ice_cream:{
+    icon:'🍦', name:'Ice Cream & Sundaes', desc:'Milkshakes, sundaes, banana splits, and portions',
+    questions:[
+      {q:"How many scoops of ice cream go in a milkshake?",options:["2 scoops","3 scoops","4 scoops","1 scoop"],answer:1,fact:"Milkshakes use 3 scoops of ice cream of choice. Always use the customer's preferred flavor."},
+      {q:"How do you know how much milk to add to a milkshake?",options:["Fill to the top of the metal tin","Fill halfway up the tin","Use exactly 8 oz of milk","Eyeball it based on the shake"],answer:0,fact:"Fill the metal tin with milk to the top of the indent on the tin — that's your measuring guide every time."},
+      {q:"What comes on a Brownie Sundae?",options:["Brownie, ice cream, hot fudge, cherry","Brownie, ice cream, whipped cream, peanuts, cherry, chocolate or caramel sauce","Brownie, ice cream, whipped cream, sprinkles, cherry","Brownie, ice cream, caramel sauce only"],answer:1,fact:"Brownie Sundae = brownie + choice of ice cream + whipped cream + peanuts + cherry + chocolate or caramel sauce."},
+      {q:"What is the difference between the Original Sundae and the Hot Fudge Sundae?",options:["Hot Fudge has brownies, Original doesn't","Hot Fudge uses hot fudge instead of chocolate or caramel sauce, and no peanuts","Hot Fudge replaces the cherry with extra fudge","There is no difference"],answer:1,fact:"Original Sundae has chocolate or caramel sauce. Hot Fudge Sundae replaces that with hot fudge — no caramel or chocolate sauce option."},
+      {q:"What comes on an Original Sundae?",options:["Ice cream, whipped cream, hot fudge, cherry","Ice cream, whipped cream, peanuts, cherry, chocolate or caramel sauce","Ice cream, brownie, whipped cream, cherry","Ice cream, whipped cream, sprinkles, cherry"],answer:1,fact:"Original Sundae = choice of ice cream + whipped cream + peanuts + cherry + chocolate or caramel sauce."},
+      {q:"What comes on a Hot Fudge Sundae?",options:["Ice cream, whipped cream, peanuts, cherry, hot fudge","Ice cream, hot fudge, brownie, cherry","Ice cream, whipped cream, chocolate sauce, cherry","Ice cream, hot fudge only"],answer:0,fact:"Hot Fudge Sundae = choice of ice cream + whipped cream + peanuts + cherry + hot fudge. No chocolate or caramel sauce."},
+      {q:"How many ice cream flavors can a customer choose for a Banana Split?",options:["One flavor only","Up to two flavors","Up to three flavors","As many as they want"],answer:2,fact:"Banana Split allows up to THREE ice cream flavor choices. Default is Neopolitan (chocolate, strawberry, vanilla) unless they choose otherwise."},
+      {q:"What are the default ice cream flavors for a Banana Split if the customer doesn't choose?",options:["Vanilla, chocolate, cookie dough","Chocolate, strawberry, vanilla (Neopolitan)","Whatever is most popular that day","The first three flavors in the case"],answer:1,fact:"Default Banana Split flavors are Neopolitan: chocolate, strawberry, and vanilla — unless the customer chooses other flavors."},
+      {q:"What size scoops are used for a Banana Split?",options:["Regular scoops","Double scoops","Bambino size — this is critical","8 oz scoops"],answer:2,fact:"Banana Split ice cream scoops MUST be bambino size — this is called out specifically on the cheatsheet. Don't use regular scoops."},
+      {q:"What comes on a Banana Split?",options:["Banana, ice cream, hot fudge, whipped cream","Banana, up to 3 ice cream flavors, whipped cream, peanuts, cherry, chocolate or caramel sauce","Banana, ice cream, sprinkles, cherry, caramel","Banana, brownie, ice cream, whipped cream, cherry"],answer:1,fact:"Banana Split = banana + up to 3 ice cream flavors (bambino scoops) + whipped cream + peanuts + cherry + chocolate or caramel sauce."},
+      {q:"Which sundae does NOT include peanuts?",options:["Original Sundae","Brownie Sundae","Hot Fudge Sundae","Banana Split"],answer:2,fact:"The Hot Fudge Sundae does not include peanuts — just ice cream, whipped cream, cherry, and hot fudge."},
+      {q:"A customer orders a milkshake but doesn't specify a flavor. What do you do?",options:["Default to vanilla","Make it chocolate — most popular","Ask the customer for their choice of ice cream","Pick whatever is fullest in the case"],answer:2,fact:"Milkshakes are made with the customer's choice of ice cream — always ask. Never assume a flavor."},
+    ]
+  }
   food_safety:{
     icon:'🧼', name:'Food Safety', desc:'Sanitation, temperatures, and safe handling',
     questions:[
@@ -391,11 +408,12 @@ function selectAll() {
 // ─── QUIZ ────────────────────────────────────────────────────────────────────
 const TOTAL_QUESTIONS = 20;
 const GUARANTEED = {
-  sandwiches:  6,
-  portions:    4,
+  sandwiches:  5,
+  portions:    3,
   closing:     3,
-  operations:  3,
+  operations:  2,
   food_safety: 2,
+  ice_cream:   3,
   catering:    2,
 };
 
